@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>کارلیست</title>
+  <link rel="icon" href="icon.png" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Vazirmatn', Tahoma, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: linear-gradient(160deg, #f0fdfa 0%, #f5f5f4 100%);
+      color: #134e4a;
+      padding: 24px;
+      text-align: center;
+    }
+    img.logo { width: 88px; height: 88px; border-radius: 22px; box-shadow: 0 10px 30px rgba(15, 118, 110, 0.25); }
+    h1 { font-size: 22px; font-weight: 700; }
+    p { font-size: 13px; color: #57534e; line-height: 2; max-width: 340px; }
+    .spinner {
+      width: 26px; height: 26px;
+      border: 3px solid rgba(15, 118, 110, 0.2);
+      border-top-color: #0f766e;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .box {
+      background: #ffffff;
+      border: 1px solid #e7e5e4;
+      border-radius: 16px;
+      padding: 20px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      display: none;
+    }
+    .box.show { display: block; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #134e4a; }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      border: 1.5px solid #d6d3d1;
+      border-radius: 12px;
+      outline: none;
+      direction: ltr;
+      text-align: left;
+    }
+    input:focus { border-color: #0f766e; }
+    button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      background: #0f766e;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    button:active { opacity: 0.85; }
+    .err { color: #dc2626; font-size: 12px; margin-top: 8px; display: none; }
+    .hint { font-size: 11px; color: #a8a29e; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <img class="logo" src="icon.png" alt="کارلیست" />
+  <h1>کارلیست</h1>
+
+  <!-- اگر آدرس ذخیره شده، سریع وصل می‌شود -->
+  <div class="spinner" id="loading" role="status"></div>
+  <p id="loading-text">در حال اتصال به سرور…</p>
+
+  <!-- اگر آدرس ذخیره نشده، از کاربر می‌پرسد -->
+  <div class="box" id="setup">
+    <label for="server-url">آدرس سرور اپ رو وارد کن</label>
+    <input id="server-url" type="url" placeholder="https://karlist.example.com" autocomplete="off" />
+    <p class="err" id="err">آدرس باید با https:// یا http:// شروع شود</p>
+    <button onclick="save()">اتصال</button>
+    <p class="hint">برای تغییر آدرس بعداً: تنظیمات گوشی ← برنامه‌ها ← کارلیست ← پاک‌کردن داده‌ها</p>
+  </div>
+
+  <script>
+    var KEY = 'karlist-server-url'
+
+    function getSaved() {
+      try { return localStorage.getItem(KEY) } catch (e) { return null }
+    }
+
+    function go(url) {
+      document.getElementById('loading-text').textContent = 'در حال اتصال به ' + url + ' …'
+      window.location.replace(url)
+    }
+
+    var saved = getSaved()
+    if (saved && /^https?:\/\/.+/.test(saved)) {
+      go(saved)
+    } else {
+      // اولین اجرا: فرم را نشان بده
+      document.getElementById('loading').style.display = 'none'
+      document.getElementById('loading-text').style.display = 'none'
+      document.getElementById('setup').className = 'box show'
+    }
+
+    function save() {
+      var input = document.getElementById('server-url')
+      var err = document.getElementById('err')
+      var url = (input.value || '').trim().replace(/\/+$/, '')
+      if (!/^https?:\/\/.+/.test(url)) {
+        err.style.display = 'block'
+        return
+      }
+      try { localStorage.setItem(KEY, url) } catch (e) {}
+      go(url)
+    }
+
+    document.getElementById('server-url').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') save()
+    })
+  </script>
+</body>
+</html>

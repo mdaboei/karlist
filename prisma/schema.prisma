@@ -1,0 +1,20 @@
+// دیتابیس اپ «کارلیست» — هر تسک یک رکورد در جدول Task است
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  title     String
+  category  String   @default("personal") // work | personal | shopping
+  priority  String   @default("normal") // low | normal | urgent
+  done      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

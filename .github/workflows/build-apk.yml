@@ -50,6 +50,23 @@ jobs:
             exit 1
           fi
 
+      - name: بازسازی فایل‌های تولیدی Capacitor
+        run: |
+          # این دستور همه فایل‌های تولیدشده را از نو می‌سازد:
+          # assets (صفحه اول اپ)، capacitor.config.json و ماژول پلاگین‌ها
+          npx cap sync android
+
+          # config.xml فقط هنگام cap add ساخته می‌شود؛ اگر نبود، همین‌جا می‌سازیم
+          if [ ! -f android/app/src/main/res/xml/config.xml ]; then
+            mkdir -p android/app/src/main/res/xml
+            printf '%s\n' \
+              "<?xml version='1.0' encoding='utf-8'?>" \
+              '<widget version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">' \
+              '  <access origin="*" />' \
+              '</widget>' > android/app/src/main/res/xml/config.xml
+            echo "config.xml ساخته شد"
+          fi
+
       - name: ساخت APK
         run: |
           cd android

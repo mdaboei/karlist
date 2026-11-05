@@ -1,5 +1,6 @@
 name: Build Android APK (کارلیست)
 
+# هر بار که کد push شود یا دستی اجرا کنی، APK می‌سازد
 on:
   workflow_dispatch:
   push:
@@ -26,11 +27,28 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: نصب Android SDK
-        uses: android-actions/setup-android@v3
+      - name: آماده‌سازی Android SDK
+        run: |
+          SDKMAN="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDKMAN" ] || SDKMAN="$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager"
 
-      - name: پذیرش لایسنس‌ها
-        run: yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          # پذیرش لایسنس‌ها
+          yes | "$SDKMAN" --licenses > /dev/null 2>&1 || true
+
+          # نصب پلتفرم ۳۶ و ابزار بیلد — تا ۵ بار تلاش مجدد در صورت خطای موقت
+          ok=0
+          for i in 1 2 3 4 5; do
+            if "$SDKMAN" "platform-tools" "platforms;android-36" "build-tools;36.0.0"; then
+              ok=1
+              break
+            fi
+            echo "تلاش $i ناموفق بود، ۱۵ ثانیه صبر می‌کنیم..."
+            sleep 15
+          done
+          if [ "$ok" -ne 1 ]; then
+            echo "::error::نصب SDK بعد از ۵ تلاش ناموفق بود"
+            exit 1
+          fi
 
       - name: ساخت APK
         run: |
